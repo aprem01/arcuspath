@@ -38,6 +38,7 @@ export default function SearchBar({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-arcus-purple focus:border-transparent text-sm"
+            suppressHydrationWarning
           />
         </div>
         <button type="submit" className="btn-primary text-sm">
@@ -62,6 +63,7 @@ export default function SearchBar({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="w-full pl-12 pr-4 py-3 md:py-4 border-0 focus:ring-0 text-lg placeholder:text-slate-400 rounded-xl md:rounded-none md:rounded-l-xl"
+            suppressHydrationWarning
           />
         </div>
 
@@ -74,6 +76,7 @@ export default function SearchBar({
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             className="w-full pl-12 pr-4 py-3 md:py-4 border-0 focus:ring-0 text-lg placeholder:text-slate-400 rounded-xl md:rounded-none"
+            suppressHydrationWarning
           />
         </div>
 
