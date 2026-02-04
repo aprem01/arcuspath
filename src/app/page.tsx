@@ -1,9 +1,10 @@
+import Link from "next/link";
 import SearchBar from "@/components/SearchBar";
 import { CategoryList } from "@/components/CategoryCard";
 import ProviderCard from "@/components/ProviderCard";
 import { categories } from "@/data/categories";
 import { providers } from "@/data/providers";
-import { ShieldCheck, Heart, Users, Lock } from "lucide-react";
+import { ShieldCheck, Heart, Users, Lock, BookOpen, ArrowRight, CheckCircle2 } from "lucide-react";
 
 export default function Home() {
   // Get featured providers (top rated)
@@ -158,6 +159,91 @@ export default function Home() {
           <a href="/search" className="btn-secondary">
             View All Providers
           </a>
+        </div>
+      </section>
+
+      {/* ArcusPath 360 Section */}
+      <section className="bg-gradient-to-br from-purple-50 via-white to-teal-50 border-y border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium mb-4">
+                <BookOpen className="w-4 h-4" aria-hidden="true" />
+                Free Resources
+              </div>
+              <h2 className="text-3xl font-bold text-slate-900 mb-4">
+                ArcusPath{" "}
+                <span className="bg-gradient-arcus bg-clip-text text-transparent">
+                  360
+                </span>
+              </h2>
+              <p className="text-lg text-slate-600 mb-6">
+                Comprehensive guides to help you navigate finding affirming providers,
+                understanding your rights, and accessing the services you need with
+                confidence.
+              </p>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-3 text-slate-600">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" aria-hidden="true" />
+                  <span>Step-by-step checklists for every situation</span>
+                </li>
+                <li className="flex items-center gap-3 text-slate-600">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" aria-hidden="true" />
+                  <span>Know what questions to ask providers</span>
+                </li>
+                <li className="flex items-center gap-3 text-slate-600">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" aria-hidden="true" />
+                  <span>Understand your rights and options</span>
+                </li>
+              </ul>
+              <Link
+                href="/360"
+                className="btn-primary inline-flex items-center gap-2"
+              >
+                Explore 360 Guides
+                <ArrowRight className="w-4 h-4" aria-hidden="true" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Link
+                href="/360/finding-affirming-healthcare"
+                className="card p-4 hover:shadow-md hover:border-purple-200 transition-all group"
+              >
+                <h3 className="font-semibold text-slate-900 text-sm group-hover:text-arcus-purple transition-colors">
+                  Finding Affirming Healthcare
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">8 min read</p>
+              </Link>
+              <Link
+                href="/360/legal-name-gender-change"
+                className="card p-4 hover:shadow-md hover:border-purple-200 transition-all group"
+              >
+                <h3 className="font-semibold text-slate-900 text-sm group-hover:text-arcus-purple transition-colors">
+                  Name &amp; Gender Changes
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">10 min read</p>
+              </Link>
+              <Link
+                href="/360/workplace-rights"
+                className="card p-4 hover:shadow-md hover:border-purple-200 transition-all group"
+              >
+                <h3 className="font-semibold text-slate-900 text-sm group-hover:text-arcus-purple transition-colors">
+                  Your Workplace Rights
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">9 min read</p>
+              </Link>
+              <Link
+                href="/360/coming-out-safely"
+                className="card p-4 hover:shadow-md hover:border-purple-200 transition-all group"
+              >
+                <h3 className="font-semibold text-slate-900 text-sm group-hover:text-arcus-purple transition-colors">
+                  Coming Out Safely
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">8 min read</p>
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 

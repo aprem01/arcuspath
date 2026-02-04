@@ -2,13 +2,14 @@
 
 import { useSearchParams } from "next/navigation";
 import { useState, useMemo, Suspense } from "react";
-import { Filter, X } from "lucide-react";
+import { Filter, X, ArrowUpDown, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
 import ProviderCard from "@/components/ProviderCard";
 import { TrustBadgeList } from "@/components/TrustBadge";
+import AISearchAssistant from "@/components/AISearchAssistant";
 import { categories, trustBadges } from "@/data/categories";
 import { searchProviders } from "@/data/providers";
-import { TrustBadge } from "@/lib/types";
+import { TrustBadge, SearchFilters, SortOption } from "@/lib/types";
 
 function SearchContent() {
   const searchParams = useSearchParams();
@@ -21,24 +22,24 @@ function SearchContent() {
   const [selectedBadges, setSelectedBadges] = useState<TrustBadge["id"][]>([]);
   const [selectedSubcategory, setSelectedSubcategory] = useState("");
   const [virtualOnly, setVirtualOnly] = useState(false);
+  const [sortBy, setSortBy] = useState<SortOption>("trust");
+  const [showAIAssistant, setShowAIAssistant] = useState(false);
 
   const selectedCategory = categories.find((c) => c.id === categoryId);
 
   const results = useMemo(() => {
-    let filtered = searchProviders(
-      query,
-      categoryId,
-      selectedSubcategory,
-      location,
-      selectedBadges
-    );
+    const filters: SearchFilters = {};
 
-    if (virtualOnly) {
-      filtered = filtered.filter((p) => p.location.virtual);
-    }
+    if (query) filters.query = query;
+    if (categoryId) filters.category = categoryId;
+    if (selectedSubcategory) filters.subcategory = selectedSubcategory;
+    if (location) filters.location = location;
+    if (selectedBadges.length > 0) filters.badges = selectedBadges;
+    if (virtualOnly) filters.virtual = true;
 
-    return filtered;
-  }, [query, categoryId, selectedSubcategory, location, selectedBadges, virtualOnly]);
+    const result = searchProviders(filters, sortBy);
+    return result.providers;
+  }, [query, categoryId, selectedSubcategory, location, selectedBadges, virtualOnly, sortBy]);
 
   const toggleBadge = (badge: TrustBadge["id"]) => {
     setSelectedBadges((prev) =>
@@ -58,26 +59,68 @@ function SearchContent() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Search Header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <SearchBar
           initialQuery={query}
           initialLocation={location}
           variant="compact"
         />
+
+        {/* AI Search Toggle */}
+        <button
+          onClick={() => setShowAIAssistant(!showAIAssistant)}
+          className="mt-3 flex items-center gap-2 text-sm text-arcus-purple hover:text-purple-700 transition-colors"
+        >
+          <Sparkles className="w-4 h-4" aria-hidden="true" />
+          <span>Try natural language search</span>
+          {showAIAssistant ? (
+            <ChevronUp className="w-4 h-4" aria-hidden="true" />
+          ) : (
+            <ChevronDown className="w-4 h-4" aria-hidden="true" />
+          )}
+        </button>
+
+        {/* AI Search Assistant */}
+        {showAIAssistant && (
+          <div className="mt-4 animate-slide-up">
+            <AISearchAssistant />
+          </div>
+        )}
       </div>
 
       {/* Page Title */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">
-          {selectedCategory
-            ? `${selectedCategory.name} Providers`
-            : query
-            ? `Search results for "${query}"`
-            : "All Providers"}
-        </h1>
-        <p className="text-slate-600 mt-1">
-          {results.length} provider{results.length !== 1 ? "s" : ""} found
-        </p>
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">
+            {selectedCategory
+              ? `${selectedCategory.name} Providers`
+              : query
+              ? `Search results for "${query}"`
+              : "All Providers"}
+          </h1>
+          <p className="text-slate-600 mt-1">
+            {results.length} provider{results.length !== 1 ? "s" : ""} found
+          </p>
+        </div>
+
+        {/* Sort Dropdown */}
+        <div className="flex items-center gap-2">
+          <label htmlFor="sort-select" className="text-sm text-slate-600 flex items-center gap-1">
+            <ArrowUpDown className="w-4 h-4" aria-hidden="true" />
+            Sort by:
+          </label>
+          <select
+            id="sort-select"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as SortOption)}
+            className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:ring-arcus-purple focus:border-arcus-purple"
+          >
+            <option value="trust">Most Trusted</option>
+            <option value="rating">Highest Rated</option>
+            <option value="newest">Newest</option>
+            <option value="alphabetical">A-Z</option>
+          </select>
+        </div>
       </div>
 
       <div className="flex gap-8">

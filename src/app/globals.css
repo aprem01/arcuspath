@@ -2,48 +2,253 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ==========================================================================
+   ARCUSPATH GLOBAL STYLES
+   Trust-first, accessibility-first design system
+   ========================================================================== */
+
 @layer base {
   :root {
     --arcus-purple: #7C3AED;
     --arcus-blue: #2563EB;
     --arcus-teal: #0D9488;
+
+    /* Focus ring color */
+    --focus-ring: var(--arcus-purple);
+  }
+
+  /* Smooth scrolling but respect reduced motion preference */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 
   body {
     @apply antialiased bg-slate-50 text-slate-900;
+    /* Prevent horizontal scroll */
+    overflow-x: hidden;
+  }
+
+  /* Focus styles - WCAG 2.2 compliant */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-arcus-purple ring-offset-2;
+  }
+
+  /* Remove default focus for mouse users */
+  *:focus:not(:focus-visible) {
+    outline: none;
+    box-shadow: none;
+  }
+
+  /* Selection color */
+  ::selection {
+    @apply bg-arcus-purple/20 text-slate-900;
   }
 }
 
 @layer components {
+  /* ==========================================================================
+     SKIP LINK - Accessibility
+     ========================================================================== */
+  .skip-link {
+    @apply absolute -top-10 left-4 z-[100] bg-arcus-purple text-white px-4 py-2 rounded-lg font-medium;
+    @apply focus:top-4 transition-all;
+  }
+
+  /* ==========================================================================
+     BUTTONS
+     ========================================================================== */
   .btn-primary {
     @apply bg-arcus-purple hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors;
+    @apply focus-visible:ring-2 focus-visible:ring-arcus-purple focus-visible:ring-offset-2;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-secondary {
     @apply bg-white hover:bg-slate-50 text-arcus-purple border border-arcus-purple font-medium py-2 px-4 rounded-lg transition-colors;
+    @apply focus-visible:ring-2 focus-visible:ring-arcus-purple focus-visible:ring-offset-2;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors;
+    @apply focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* ==========================================================================
+     CARDS
+     ========================================================================== */
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow;
+    @apply bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden;
+    @apply hover:shadow-md transition-shadow;
   }
 
+  .card-interactive {
+    @apply card cursor-pointer;
+    @apply focus-within:ring-2 focus-within:ring-arcus-purple focus-within:ring-offset-2;
+  }
+
+  /* ==========================================================================
+     BADGES - WCAG AA Compliant (4.5:1 contrast ratio)
+     Using -800 text colors for accessibility
+     ========================================================================== */
   .badge {
     @apply inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full;
   }
 
   .badge-verified {
-    @apply bg-emerald-100 text-emerald-700;
+    @apply bg-emerald-100 text-emerald-800;
   }
 
   .badge-affirming {
-    @apply bg-purple-100 text-purple-700;
+    @apply bg-purple-100 text-purple-800;
   }
 
   .badge-owned {
-    @apply bg-pink-100 text-pink-700;
+    @apply bg-pink-100 text-pink-800;
   }
 
   .badge-trained {
-    @apply bg-blue-100 text-blue-700;
+    @apply bg-blue-100 text-blue-800;
+  }
+
+  /* ==========================================================================
+     FORM ELEMENTS
+     ========================================================================== */
+  .input {
+    @apply w-full px-3 py-2 border border-slate-300 rounded-lg;
+    @apply focus:ring-2 focus:ring-arcus-purple focus:border-transparent;
+    @apply placeholder:text-slate-400;
+    @apply disabled:bg-slate-100 disabled:cursor-not-allowed;
+  }
+
+  .input-error {
+    @apply input border-red-500;
+    @apply focus:ring-red-500;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-slate-900 mb-1;
+  }
+
+  .label-required::after {
+    content: " *";
+    @apply text-red-500;
+  }
+
+  /* ==========================================================================
+     LAYOUT UTILITIES
+     ========================================================================== */
+  /* Safe scroll container - prevents overflow issues */
+  .scroll-container {
+    @apply overflow-y-auto overscroll-contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Main content wrapper - ensures proper scrolling */
+  .main-content {
+    @apply flex-1 min-h-0;
+  }
+
+  /* ==========================================================================
+     VERIFICATION LEVEL INDICATORS
+     ========================================================================== */
+  .verification-none {
+    @apply text-slate-500 bg-slate-100;
+  }
+
+  .verification-self {
+    @apply text-amber-700 bg-amber-50;
+  }
+
+  .verification-credential {
+    @apply text-blue-700 bg-blue-50;
+  }
+
+  .verification-community {
+    @apply text-purple-700 bg-purple-50;
+  }
+
+  .verification-arcus {
+    @apply text-emerald-700 bg-emerald-50;
+  }
+
+  /* ==========================================================================
+     ANIMATIONS (respects reduced motion)
+     ========================================================================== */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+}
+
+@layer utilities {
+  /* Line clamp utilities */
+  .line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }

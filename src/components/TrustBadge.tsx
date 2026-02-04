@@ -1,46 +1,56 @@
 import { ShieldCheck, Heart, Star, GraduationCap } from "lucide-react";
+import { TrustBadgeId } from "@/lib/types";
 
 interface TrustBadgeProps {
-  type: "verified" | "affirming" | "owned" | "trained";
+  type: TrustBadgeId;
   showLabel?: boolean;
   size?: "sm" | "md" | "lg";
 }
 
+// WCAG AA compliant colors (4.5:1 contrast ratio)
 const badgeConfig = {
   verified: {
     label: "Verified",
     fullLabel: "Verified Provider",
     icon: ShieldCheck,
-    className: "badge-verified",
-    description: "Identity and credentials verified",
+    // Dark green on light green - meets AA contrast
+    bgColor: "bg-emerald-100",
+    textColor: "text-emerald-800",
+    description: "Identity and credentials verified by ArcusPath",
   },
   affirming: {
     label: "Affirming",
     fullLabel: "LGBTQIA+ Affirming",
     icon: Heart,
-    className: "badge-affirming",
-    description: "Demonstrated affirming care",
+    // Dark purple on light purple - meets AA contrast
+    bgColor: "bg-purple-100",
+    textColor: "text-purple-800",
+    description: "Demonstrated commitment to affirming care",
   },
   owned: {
-    label: "LGBTQIA+ Owned",
+    label: "LGBTQ+ Owned",
     fullLabel: "LGBTQIA+ Owned",
     icon: Star,
-    className: "badge-owned",
-    description: "Community-owned business",
+    // Dark pink on light pink - meets AA contrast
+    bgColor: "bg-pink-100",
+    textColor: "text-pink-800",
+    description: "Business owned by LGBTQIA+ community member",
   },
   trained: {
     label: "Trained",
     fullLabel: "Competency Trained",
     icon: GraduationCap,
-    className: "badge-trained",
-    description: "Completed competency training",
+    // Dark blue on light blue - meets AA contrast
+    bgColor: "bg-blue-100",
+    textColor: "text-blue-800",
+    description: "Completed LGBTQIA+ cultural competency training",
   },
 };
 
 const sizeClasses = {
-  sm: "text-xs px-1.5 py-0.5",
-  md: "text-xs px-2 py-1",
-  lg: "text-sm px-3 py-1.5",
+  sm: "text-xs px-1.5 py-0.5 gap-1",
+  md: "text-xs px-2 py-1 gap-1",
+  lg: "text-sm px-3 py-1.5 gap-1.5",
 };
 
 const iconSizes = {
@@ -59,10 +69,14 @@ export default function TrustBadge({
 
   return (
     <span
-      className={`badge ${config.className} ${sizeClasses[size]}`}
-      title={config.description}
+      className={`
+        inline-flex items-center rounded-full font-medium
+        ${config.bgColor} ${config.textColor} ${sizeClasses[size]}
+      `}
+      role="img"
+      aria-label={`${config.fullLabel}: ${config.description}`}
     >
-      <Icon className={iconSizes[size]} />
+      <Icon className={iconSizes[size]} aria-hidden="true" />
       {showLabel && <span>{config.label}</span>}
     </span>
   );
@@ -73,14 +87,22 @@ export function TrustBadgeList({
   showLabel = true,
   size = "md",
 }: {
-  badges: TrustBadgeProps["type"][];
+  badges: TrustBadgeId[];
   showLabel?: boolean;
   size?: "sm" | "md" | "lg";
 }) {
+  if (!badges || badges.length === 0) return null;
+
   return (
-    <div className="flex flex-wrap gap-1.5">
+    <div
+      className="flex flex-wrap gap-1.5"
+      role="list"
+      aria-label="Trust badges"
+    >
       {badges.map((badge) => (
-        <TrustBadge key={badge} type={badge} showLabel={showLabel} size={size} />
+        <span key={badge} role="listitem">
+          <TrustBadge type={badge} showLabel={showLabel} size={size} />
+        </span>
       ))}
     </div>
   );

@@ -45,6 +45,12 @@ export default function Header() {
             >
               Financial
             </Link>
+            <Link
+              href="/360"
+              className="text-arcus-purple hover:text-purple-700 transition-colors font-medium"
+            >
+              360 Guides
+            </Link>
           </div>
 
           {/* Desktop CTA */}
@@ -103,6 +109,13 @@ export default function Header() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Financial
+              </Link>
+              <Link
+                href="/360"
+                className="text-arcus-purple hover:text-purple-700 font-medium"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                360 Guides
               </Link>
               <hr />
               <button className="btn-secondary text-sm w-full">
