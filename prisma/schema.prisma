@@ -1,0 +1,434 @@
+// ArcusPath Database Schema
+// Provider onboarding, badge verification, community vouching, referral tracking
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// USER & AUTHENTICATION (NextAuth.js compatible)
+// ============================================================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+  password      String?   // For credentials auth
+  role          String    @default("USER") // USER, PROVIDER, ADMIN, SUPER_ADMIN
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  provider      Provider?
+  vouchesGiven  Vouch[]        @relation("VouchGiver")
+  referralCode  ReferralCode?
+  referredBy    Referral?      @relation("ReferredUser")
+  referralsMade Referral[]     @relation("ReferringUser")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============================================================================
+// PROVIDER & ONBOARDING
+// ============================================================================
+
+model Provider {
+  id              String   @id @default(cuid())
+
+  // Link to user (nullable for legacy/seeded providers)
+  userId          String?  @unique
+  user            User?    @relation(fields: [userId], references: [id])
+
+  // Basic Info
+  name            String
+  businessName    String?
+  categoryId      String
+  subcategory     String   @default("")
+  description     String   @default("")
+  shortBio        String   @default("")
+  pronouns        String?
+  yearEstablished Int?
+
+  // Location
+  city            String   @default("")
+  state           String   @default("")
+  zipCode         String?
+  virtual         Boolean  @default(false)
+  serviceArea     String?  // JSON array stored as string
+
+  // Contact
+  email           String   @default("")
+  phone           String?
+  website         String?
+  preferredContact String  @default("RELAY") // EMAIL, PHONE, WEBSITE, RELAY
+  responseTime    String?
+
+  // Status
+  status          String   @default("DRAFT") // DRAFT, PENDING_REVIEW, CHANGES_REQUESTED, APPROVED, ACTIVE, SUSPENDED, REMOVED
+
+  // Professional
+  specialties     String   @default("[]") // JSON array stored as string
+  languages       String   @default("[]") // JSON array stored as string
+
+  // Trust
+  verificationLevel String @default("none") // none, self, credential, community, arcus_verified
+  lgbtqOwned      Boolean  @default(false)
+  affirmationStatement String?
+  communityEndorsements Int @default(0)
+
+  // Rating
+  rating          Float?
+  reviewCount     Int      @default(0)
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  publishedAt     DateTime?
+
+  // Relations
+  application     ProviderApplication?
+  credentials     Credential[]
+  badges          ProviderBadge[]
+  vouches         Vouch[]
+  reports         Report[]
+  moderationActions ModerationAction[]
+  referrals       Referral[]
+  inclusiveTags   ProviderInclusiveTag[]
+}
+
+// ============================================================================
+// PROVIDER APPLICATION (Multi-step onboarding)
+// ============================================================================
+
+model ProviderApplication {
+  id            String   @id @default(cuid())
+  providerId    String   @unique
+  provider      Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  // Application tracking
+  currentStep   Int      @default(1)
+  totalSteps    Int      @default(5)
+  status        String   @default("IN_PROGRESS") // IN_PROGRESS, SUBMITTED, UNDER_REVIEW, APPROVED, REJECTED, CHANGES_REQUESTED
+
+  // Step data (JSON for flexibility)
+  step1Data     String?  // Basic info JSON
+  step2Data     String?  // Location JSON
+  step3Data     String?  // Credentials JSON
+  step4Data     String?  // Trust profile JSON
+  step5Data     String?  // Review JSON
+
+  // Review
+  submittedAt   DateTime?
+  reviewedAt    DateTime?
+  reviewedBy    String?
+  reviewNotes   String?
+  rejectionReason String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ============================================================================
+// CREDENTIALS & VERIFICATION
+// ============================================================================
+
+model Credential {
+  id              String   @id @default(cuid())
+  providerId      String
+  provider        Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  type            String   // LICENSE, CERTIFICATION, DEGREE, TRAINING, MEMBERSHIP, OTHER
+  name            String   // e.g., "California Medical License"
+  issuingBody     String   @default("") // e.g., "Medical Board of California"
+  licenseNumber   String?
+  issuedAt        DateTime?
+  expiresAt       DateTime?
+
+  // Document upload
+  documentUrl     String?
+  documentName    String?
+
+  // Verification
+  status          String   @default("PENDING") // PENDING, VERIFIED, REJECTED, EXPIRED
+  verifiedAt      DateTime?
+  verifiedBy      String?
+  verificationNotes String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ============================================================================
+// BADGE VERIFICATION SYSTEM
+// ============================================================================
+
+model Badge {
+  id              String   @id @default(cuid())
+  slug            String   @unique // "verified", "affirming", "owned", "trained"
+  name            String
+  description     String
+  icon            String?
+  color           String?
+
+  // Requirements
+  requirements    String?  // JSON array of requirement descriptions
+  evidenceRequired Boolean @default(true)
+
+  // Admin
+  isActive        Boolean  @default(true)
+  displayOrder    Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  providerBadges  ProviderBadge[]
+}
+
+model ProviderBadge {
+  id            String   @id @default(cuid())
+  providerId    String
+  provider      Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  badgeId       String
+  badge         Badge    @relation(fields: [badgeId], references: [id])
+
+  // Verification
+  status        String   @default("PENDING") // PENDING, APPROVED, REJECTED, EXPIRED, REVOKED
+  evidence      String?  // JSON array of evidence items
+  evidenceUrls  String?  // JSON array of document URLs
+
+  // Application
+  appliedAt     DateTime @default(now())
+  applicationNotes String?
+
+  // Admin review
+  reviewedAt    DateTime?
+  reviewedBy    String?
+  reviewNotes   String?
+
+  // Expiration
+  grantedAt     DateTime?
+  expiresAt     DateTime?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([providerId, badgeId])
+}
+
+// ============================================================================
+// COMMUNITY VOUCHING
+// ============================================================================
+
+model Vouch {
+  id          String   @id @default(cuid())
+  providerId  String
+  provider    Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation("VouchGiver", fields: [userId], references: [id])
+
+  // Vouch content
+  relationship String  // "client", "colleague", "community_member", "family_friend"
+  comment     String?
+  isAnonymous Boolean  @default(false)
+
+  // Verification (for verified vouches)
+  isVerified  Boolean  @default(false)
+  verifiedAt  DateTime?
+
+  // Status
+  status      String   @default("ACTIVE") // ACTIVE, HIDDEN, REMOVED
+
+  // Moderation
+  flaggedAt   DateTime?
+  flagReason  String?
+  moderatedAt DateTime?
+  moderatedBy String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([providerId, userId]) // One vouch per user per provider
+}
+
+// ============================================================================
+// REFERRAL PROGRAM
+// ============================================================================
+
+model ReferralCode {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id])
+
+  code        String   @unique // e.g., "MAYA2024"
+
+  // Stats
+  totalClicks Int      @default(0)
+  totalReferrals Int   @default(0)
+  successfulReferrals Int @default(0)
+
+  // Rewards
+  rewardsEarned Float  @default(0)
+  rewardsPaid   Float  @default(0)
+
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  referrals   Referral[]
+}
+
+model Referral {
+  id              String   @id @default(cuid())
+
+  // Who made the referral
+  referralCodeId  String
+  referralCode    ReferralCode @relation(fields: [referralCodeId], references: [id])
+  referringUserId String
+  referringUser   User     @relation("ReferringUser", fields: [referringUserId], references: [id])
+
+  // Who was referred
+  referredUserId  String?  @unique
+  referredUser    User?    @relation("ReferredUser", fields: [referredUserId], references: [id])
+  referredEmail   String?  // For tracking before signup
+
+  // Provider referral (if referring a provider)
+  providerId      String?
+  provider        Provider? @relation(fields: [providerId], references: [id])
+
+  // Status
+  status          String   @default("PENDING") // PENDING, SIGNED_UP, COMPLETED, EXPIRED, INVALID
+
+  // Reward
+  rewardAmount    Float?
+  rewardPaidAt    DateTime?
+
+  createdAt       DateTime @default(now())
+  convertedAt     DateTime? // When referral became successful
+}
+
+// ============================================================================
+// REPORTS & MODERATION
+// ============================================================================
+
+model Report {
+  id            String   @id @default(cuid())
+  providerId    String
+  provider      Provider @relation(fields: [providerId], references: [id])
+
+  reason        String   // DISCRIMINATION, UNSAFE_PRACTICES, FALSE_CREDENTIALS, HARASSMENT, PRIVACY_VIOLATION, MISREPRESENTATION, OTHER
+  description   String
+
+  // Reporter (anonymized)
+  sessionId     String
+
+  // Status
+  status        String   @default("PENDING") // PENDING, REVIEWING, RESOLVED, DISMISSED
+
+  // Moderation
+  reviewedAt    DateTime?
+  reviewedBy    String?
+  moderatorNotes String?
+  resolution    String?
+  resolvedAt    DateTime?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model ModerationAction {
+  id          String   @id @default(cuid())
+  providerId  String
+  provider    Provider @relation(fields: [providerId], references: [id])
+
+  action      String   // WARNING, SUSPEND, REMOVE, REINSTATE, BADGE_REVOKE
+  reason      String
+  performedBy String
+  performedAt DateTime @default(now())
+}
+
+// ============================================================================
+// CATEGORIES (Synced from existing data)
+// ============================================================================
+
+model Category {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  name          String
+  icon          String
+  description   String
+  subcategories String   // JSON array
+  providerCount Int      @default(0)
+  displayOrder  Int      @default(0)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ============================================================================
+// INCLUSIVE TAGS
+// ============================================================================
+
+model InclusiveTag {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+}
+
+// Provider to Inclusive Tag mapping
+model ProviderInclusiveTag {
+  id          String   @id @default(cuid())
+  providerId  String
+  provider    Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  tagSlug     String
+
+  createdAt   DateTime @default(now())
+
+  @@unique([providerId, tagSlug])
+}
