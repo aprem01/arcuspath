@@ -82,7 +82,7 @@ export default async function AdminLayout({
       </aside>
 
       {/* Main Content */}
-      <main className="ml-64 min-h-screen">{children}</main>
+      <main className="ml-64 min-h-screen p-8">{children}</main>
     </div>
   );
 }

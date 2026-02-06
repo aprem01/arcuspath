@@ -84,7 +84,9 @@ model Provider {
   // Basic Info
   name            String
   businessName    String?
-  categoryId      String
+  image           String?
+  categoryId      String?
+  category        Category? @relation(fields: [categoryId], references: [id])
   subcategory     String   @default("")
   description     String   @default("")
   shortBio        String   @default("")
@@ -405,6 +407,9 @@ model Category {
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  // Relations
+  providers     Provider[]
 }
 
 // ============================================================================
