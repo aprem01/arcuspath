@@ -50,7 +50,7 @@ export default async function ReviewApplicationPage({ params }: Props) {
             Review Application
           </h1>
           <p className="text-gray-600">
-            {application.provider.name || application.provider.user.name}
+            {application.provider.name || application.provider.user?.name || "Unknown"}
           </p>
         </div>
         <ApplicationReviewActions
@@ -209,7 +209,7 @@ export default async function ReviewApplicationPage({ params }: Props) {
           <div className="bg-white rounded-xl border border-gray-200 p-4">
             <h3 className="font-semibold text-gray-900 mb-4">Applicant</h3>
             <div className="flex items-center gap-3">
-              {application.provider.user.image ? (
+              {application.provider.user?.image ? (
                 <img
                   src={application.provider.user.image}
                   alt=""
@@ -222,10 +222,10 @@ export default async function ReviewApplicationPage({ params }: Props) {
               )}
               <div>
                 <p className="font-medium text-gray-900">
-                  {application.provider.user.name}
+                  {application.provider.user?.name || "Unknown"}
                 </p>
                 <p className="text-sm text-gray-500">
-                  {application.provider.user.email}
+                  {application.provider.user?.email || "-"}
                 </p>
               </div>
             </div>
