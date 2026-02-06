@@ -15,7 +15,7 @@ interface PendingBadge {
   providerId: string;
   providerName: string;
   providerBusiness: string | null;
-  providerCategory: string;
+  providerCategory: string | null;
   lgbtqOwned: boolean;
   badgeId: string;
   badgeName: string;
@@ -149,9 +149,11 @@ export default function BadgeReviewClient({
                             {badge.providerBusiness &&
                               ` (${badge.providerBusiness})`}
                           </p>
-                          <p className="text-xs text-gray-500 capitalize">
-                            {badge.providerCategory}
-                          </p>
+                          {badge.providerCategory && (
+                            <p className="text-xs text-gray-500 capitalize">
+                              {badge.providerCategory}
+                            </p>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-2 text-xs text-gray-500">

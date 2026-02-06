@@ -143,10 +143,10 @@ export default async function AdminApplicationsPage({
                     <td className="px-4 py-3">
                       <div>
                         <p className="font-medium text-gray-900">
-                          {app.provider.name || app.provider.user.name}
+                          {app.provider.name || app.provider.user?.name || "Unknown"}
                         </p>
                         <p className="text-sm text-gray-500">
-                          {app.provider.user.email}
+                          {app.provider.user?.email || "-"}
                         </p>
                       </div>
                     </td>

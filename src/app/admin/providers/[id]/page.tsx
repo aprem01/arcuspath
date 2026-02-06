@@ -317,7 +317,7 @@ export default async function AdminProviderDetailPage({ params }: Props) {
           <div className="bg-white rounded-xl border border-gray-200 p-4">
             <h3 className="font-semibold text-gray-900 mb-4">Account Owner</h3>
             <div className="flex items-center gap-3">
-              {provider.user.image ? (
+              {provider.user?.image ? (
                 <img
                   src={provider.user.image}
                   alt=""
@@ -329,8 +329,8 @@ export default async function AdminProviderDetailPage({ params }: Props) {
                 </div>
               )}
               <div>
-                <p className="font-medium text-gray-900">{provider.user.name}</p>
-                <p className="text-sm text-gray-500">{provider.user.email}</p>
+                <p className="font-medium text-gray-900">{provider.user?.name || "No account"}</p>
+                <p className="text-sm text-gray-500">{provider.user?.email || "-"}</p>
               </div>
             </div>
           </div>
